@@ -10,8 +10,8 @@ npm install --save https://github.com/oipwg/insight-websocket-service
 ```
 2. Modify your `(bit/lite/flo)core-node.json` config to add the service to both the services array, and add a service config.
 
-* Sample Modified Config *
-```
+*Sample Modified Config*
+```json
 {
   "version": "5.0.0-beta.69",
   "network": "testnet",
@@ -57,7 +57,7 @@ The web socket API is served using socket.io.
 ### Listen to Address Updates
 Whenever a transaction comes in, we emit updated address data for each address involved in the transaction on the `<address>` event. Just listen on the address you want to hear updates for.
 #### Example
-```
+```javascript
 var socketio = require('socket.io-client')
 
 var socket = socketio("https://insight-server-url")
