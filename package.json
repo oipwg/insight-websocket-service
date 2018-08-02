@@ -1,0 +1,24 @@
+{
+  "name": "insight-websocket-service",
+  "version": "1.0.0",
+  "description": "Add extra WebSocket Commands to Insight!",
+  "main": "src/index.js",
+  "dependencies": {
+    "events": "^3.0.0",
+    "util": "^0.11.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oipwg/insight-websocket-service.git"
+  },
+  "author": "Sky Young <sky@alexandria.io>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/oipwg/insight-websocket-service/issues"
+  },
+  "homepage": "https://github.com/oipwg/insight-websocket-service#readme"
+}
