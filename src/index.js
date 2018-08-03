@@ -83,6 +83,10 @@ WebsocketAPI.prototype.transactionEventHandler = function(tx) {
   for (var out of output_addresses){
     for (var out_addr in out){
       this.node.services.address.getAddressSummary(out_addr, { noTxList: 1 }, (err, data) => {
+        // If for some reason there is an error, or some issue, don't try to progress.
+        if (err || !data)
+          return
+
         var new_data = {
           type: "seen_in_tx_output",
           txid: tx_txid,
@@ -100,6 +104,10 @@ WebsocketAPI.prototype.transactionEventHandler = function(tx) {
   for (var inp in input_addresses){
     for (var in_addr in inp){
       this.node.services.address.getAddressSummary(in_addr, { noTxList: 1 }, (err, data) => {
+        // If for some reason there is an error, or some issue, don't try to progress.
+        if (err || !data)
+          return
+        
         var new_data = {
           type: "seen_in_tx_input",
           txid: tx_txid,
