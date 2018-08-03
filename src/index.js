@@ -12,10 +12,6 @@ var EventEmitter = require('events').EventEmitter;
  */
 var WebsocketAPI = function(options) {
   BaseService.call(this, options);
-
-  this.subscriptions = {
-    addresses: {}
-  };
 };
 
 WebsocketAPI.dependencies = ['mempool', 'address', 'web'];
@@ -39,25 +35,14 @@ WebsocketAPI.prototype.start = function(callback) {
   callback();
 };
 
-WebsocketAPI.prototype.getPublishEvents = function() {
-  return [
-    {
-      name: 'addressUpdater',
-      scope: this,
-      subscribe: this.subscribe.bind(this),
-      unsubscribe: this.unsubscribe.bind(this)
-    }
-  ];
-};
-
-
 WebsocketAPI.prototype.transactionEventHandler = function(tx) {
-  var only_output_tx, input_as_output_tx
+  var only_output_tx = {vout: []}, input_as_output_tx = {vout: []}
 
   var tx_txid
 
   for(var serve in this.node.services){
     if (this.node.services[serve].txController){
+      // Get correct addresses for outputs
       only_output_tx = this.node.services[serve].txController.transformInvTransaction(tx)
 
       tx_txid = only_output_tx.txid
@@ -71,15 +56,20 @@ WebsocketAPI.prototype.transactionEventHandler = function(tx) {
       for (var input of inputs)
         input_as_output_tx.outputs.push(input)
 
+      // Get correct addresses for inputs
       input_as_output_tx = this.node.services[serve].txController.transformInvTransaction(input_as_output_tx);
     }
   }
   
+  // Grab the correct addresses to broadcast to from the tx's 
+  // created by the two `transformInvTransaction` methods above
   var output_addresses = only_output_tx.vout
   var input_addresses = input_as_output_tx.vout
 
+  // Track events that we have emitted this round so that we don't emit them twice confusingly.
   var emitted = [];
 
+  // Emit events to output addresses
   for (var out of output_addresses){
     for (var out_addr in out){
       this.node.services.address.getAddressSummary(out_addr, { noTxList: 1 }, (err, data) => {
@@ -101,13 +91,14 @@ WebsocketAPI.prototype.transactionEventHandler = function(tx) {
     }
   }
 
+  // Emit events to input addresses
   for (var inp in input_addresses){
     for (var in_addr in inp){
       this.node.services.address.getAddressSummary(in_addr, { noTxList: 1 }, (err, data) => {
         // If for some reason there is an error, or some issue, don't try to progress.
         if (err || !data)
           return
-        
+
         var new_data = {
           type: "seen_in_tx_input",
           txid: tx_txid,
@@ -121,32 +112,6 @@ WebsocketAPI.prototype.transactionEventHandler = function(tx) {
       })
     }
   }
-};
-
-WebsocketAPI.prototype.subscribe = function(emitter, subscribe_to_address) {
-  if (!(emitter instanceof EventEmitter))
-    throw new Error('First argument is expected to be an EventEmitter');
-
-  if (typeof subscribe_to_address !== "string") 
-    throw new Error('Second argument is expected to be a String! (address)');
-
-  if (!this.subscriptions.addresses[subscribe_to_address])
-    this.subscriptions.addresses[subscribe_to_address] = []
-
-  var index = this.subscriptions.addresses[subscribe_to_address].indexOf(emitter);
-  if(index === -1) {
-    this.subscriptions.addresses[subscribe_to_address].push(emitter);
-  }
-};
-
-WebsocketAPI.prototype.unsubscribe = function(emitter) {
-  // var emitters = this.subscriptions.inv;
-  // var index = emitters.indexOf(emitter);
-
-  // for (var sub_address in this.subscriptions.addresses)
-  // if(index > -1) {
-  //   emitters.splice(index, 1);
-  // }
 };
 
 module.exports = WebsocketAPI;
