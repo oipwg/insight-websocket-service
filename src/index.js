@@ -72,44 +72,74 @@ WebsocketAPI.prototype.transactionEventHandler = function(tx) {
   // Emit events to output addresses
   for (var out of output_addresses){
     for (var out_addr in out){
-      this.node.services.address.getAddressSummary(out_addr, { noTxList: 1 }, (err, data) => {
-        // If for some reason there is an error, or some issue, don't try to progress.
-        if (err || !data)
-          return
+      try {
+        this.node.services.address.getAddressSummary(out_addr, { noTxList: 1 }, (err, data) => {
+          // If for some reason there is an error, or some issue, don't try to progress.
+          if (err || !data)
+            return
 
+          var new_data = {
+            type: "seen_in_tx_output",
+            txid: tx_txid,
+            updated_data: data
+          }
+          
+          if (emitted.indexOf(new_data) === -1){
+            emitted.push(new_data)
+            this.node.services.web.io.emit(data.addrStr, new_data)
+          }
+        })
+      } catch (e) {
+        // Likely an error where the address is BECH32 and not a regular Base58
+        // Emit that there was an update, but without address data
         var new_data = {
           type: "seen_in_tx_output",
           txid: tx_txid,
-          updated_data: data
+          address: out_addr
         }
         
         if (emitted.indexOf(new_data) === -1){
           emitted.push(new_data)
-          this.node.services.web.io.emit(data.addrStr, new_data)
+          this.node.services.web.io.emit(out_addr, new_data)
         }
-      })
+      }
     }
   }
 
   // Emit events to input addresses
   for (var inp in input_addresses){
     for (var in_addr in inp){
-      this.node.services.address.getAddressSummary(in_addr, { noTxList: 1 }, (err, data) => {
-        // If for some reason there is an error, or some issue, don't try to progress.
-        if (err || !data)
-          return
+      try {
+        this.node.services.address.getAddressSummary(in_addr, { noTxList: 1 }, (err, data) => {
+          // If for some reason there is an error, or some issue, don't try to progress.
+          if (err || !data)
+            return
 
+          var new_data = {
+            type: "seen_in_tx_input",
+            txid: tx_txid,
+            updated_data: data
+          }
+          
+          if (emitted.indexOf(new_data) === -1){
+            emitted.push(new_data)
+            this.node.services.web.io.emit(data.addrStr, new_data)
+          }
+        })
+      } catch (e) {
+        // Likely an error where the address is BECH32 and not a regular Base58
+        // Emit that there was an update, but without address data
         var new_data = {
           type: "seen_in_tx_input",
           txid: tx_txid,
-          updated_data: data
+          address: out_addr
         }
         
         if (emitted.indexOf(new_data) === -1){
           emitted.push(new_data)
-          this.node.services.web.io.emit(data.addrStr, new_data)
+          this.node.services.web.io.emit(in_addr, new_data)
         }
-      })
+      }
     }
   }
 };
