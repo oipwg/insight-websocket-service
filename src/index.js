@@ -72,7 +72,8 @@ WebsocketAPI.prototype.transactionEventHandler = function(tx) {
   // Emit events to output addresses
   for (var out of output_addresses){
     for (var out_addr in out){
-      try {
+      // Check to make sure the address is the right length and not a BECH32 address
+      if (out_addr.length >= 26 && out_addr.length <= 35)
         this.node.services.address.getAddressSummary(out_addr, { noTxList: 1 }, (err, data) => {
           // If for some reason there is an error, or some issue, don't try to progress.
           if (err || !data)
@@ -89,7 +90,7 @@ WebsocketAPI.prototype.transactionEventHandler = function(tx) {
             this.node.services.web.io.emit(data.addrStr, new_data)
           }
         })
-      } catch (e) {
+      } else {
         // Likely an error where the address is BECH32 and not a regular Base58
         // Emit that there was an update, but without address data
         var new_data = {
@@ -109,7 +110,8 @@ WebsocketAPI.prototype.transactionEventHandler = function(tx) {
   // Emit events to input addresses
   for (var inp in input_addresses){
     for (var in_addr in inp){
-      try {
+      // Check to make sure the address is the right length and not a BECH32 address
+      if (in_addr.length >= 26 && in_addr.length <= 35)
         this.node.services.address.getAddressSummary(in_addr, { noTxList: 1 }, (err, data) => {
           // If for some reason there is an error, or some issue, don't try to progress.
           if (err || !data)
@@ -126,7 +128,7 @@ WebsocketAPI.prototype.transactionEventHandler = function(tx) {
             this.node.services.web.io.emit(data.addrStr, new_data)
           }
         })
-      } catch (e) {
+      } else {
         // Likely an error where the address is BECH32 and not a regular Base58
         // Emit that there was an update, but without address data
         var new_data = {
