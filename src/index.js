@@ -73,7 +73,7 @@ WebsocketAPI.prototype.transactionEventHandler = function(tx) {
   for (var out of output_addresses){
     for (var out_addr in out){
       // Check to make sure the address is the right length and not a BECH32 address
-      if (out_addr.length >= 26 && out_addr.length <= 35)
+      if (out_addr.length >= 26 && out_addr.length <= 35) {
         this.node.services.address.getAddressSummary(out_addr, { noTxList: 1 }, (err, data) => {
           // If for some reason there is an error, or some issue, don't try to progress.
           if (err || !data)
@@ -111,7 +111,7 @@ WebsocketAPI.prototype.transactionEventHandler = function(tx) {
   for (var inp in input_addresses){
     for (var in_addr in inp){
       // Check to make sure the address is the right length and not a BECH32 address
-      if (in_addr.length >= 26 && in_addr.length <= 35)
+      if (in_addr.length >= 26 && in_addr.length <= 35){
         this.node.services.address.getAddressSummary(in_addr, { noTxList: 1 }, (err, data) => {
           // If for some reason there is an error, or some issue, don't try to progress.
           if (err || !data)
